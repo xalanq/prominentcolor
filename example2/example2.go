@@ -51,7 +51,7 @@ func main() {
 			log.Printf("Error: failed loading %s\n", file)
 			continue
 		}
-		cols, err := prominentcolor.KmeansWithArgs(prominentcolor.ArgumentNoCropping|prominentcolor.ArgumentDebugImage, img)
+		cols, _, err := prominentcolor.KmeansWithArgs(prominentcolor.ArgumentNoCropping|prominentcolor.ArgumentDebugImage, img)
 		if err != nil {
 			log.Println(err)
 			continue

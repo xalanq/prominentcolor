@@ -92,40 +92,40 @@ func GetDefaultMasks() []ColorBackgroundMask {
 
 // Kmeans uses the default: k=3, Kmeans++, Median, crop center, resize to 80 pixels, mask out white/black/green backgrounds
 // It returns an array of ColorItem which are three centroids, sorted according to dominance (most frequent first).
-func Kmeans(orgimg image.Image) (centroids []ColorItem, err error) {
+func Kmeans(orgimg image.Image) (centroids []ColorItem, numPixels int, err error) {
 	return KmeansWithAll(DefaultK, orgimg, ArgumentDefault, DefaultSize, GetDefaultMasks())
 }
 
 // KmeansWithArgs takes arguments which consists of the bits, see constants Argument*
-func KmeansWithArgs(arguments int, orgimg image.Image) (centroids []ColorItem, err error) {
+func KmeansWithArgs(arguments int, orgimg image.Image) (centroids []ColorItem, numPixels int, err error) {
 	return KmeansWithAll(DefaultK, orgimg, arguments, DefaultSize, GetDefaultMasks())
 }
 
 // KmeansWithAll takes additional arguments to define k, arguments (see constants Argument*), size to resize and masks to use
-func KmeansWithAll(k int, orgimg image.Image, arguments int, imageReSize uint, bgmasks []ColorBackgroundMask) ([]ColorItem, error) {
+func KmeansWithAll(k int, orgimg image.Image, arguments int, imageReSize uint, bgmasks []ColorBackgroundMask) ([]ColorItem, int, error) {
 
 	img := prepareImg(arguments, bgmasks, imageReSize, orgimg)
 
-	allColors, _ := extractColorsAsArray(img)
+	allColors, numPixels := extractColorsAsArray(img)
 
 	numColors := len(allColors)
 
 	if numColors == 0 {
-		return nil, fmt.Errorf("Failed, no non-alpha pixels found (either fully transparent image, or the ColorBackgroundMask removed all pixels)")
+		return nil, numPixels, fmt.Errorf("Failed, no non-alpha pixels found (either fully transparent image, or the ColorBackgroundMask removed all pixels)")
 	}
 
 	if numColors == 1 {
-		return allColors, nil
+		return allColors, numPixels, nil
 	}
 
 	if numColors <= k {
 		sortCentroids(allColors)
-		return allColors, nil
+		return allColors, numPixels, nil
 	}
 
 	centroids, err := kmeansSeed(k, allColors, arguments)
 	if err != nil {
-		return nil, err
+		return nil, numPixels, err
 	}
 
 	cent := make([][]ColorItem, k)
@@ -168,7 +168,7 @@ func KmeansWithAll(k int, orgimg image.Image, arguments int, imageReSize uint, b
 	}
 
 	sortCentroids(centroids)
-	return centroids, nil
+	return centroids, numPixels, nil
 }
 
 // ByColorCnt makes the ColorItem sortable

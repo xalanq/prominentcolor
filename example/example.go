@@ -49,7 +49,7 @@ func processBatch(k int, bitarr []int, img image.Image) string {
 	bgmasks := prominentcolor.GetDefaultMasks()
 
 	for i := 0; i < len(bitarr); i++ {
-		res, err := prominentcolor.KmeansWithAll(k, img, bitarr[i], resizeSize, bgmasks)
+		res, _, err := prominentcolor.KmeansWithAll(k, img, bitarr[i], resizeSize, bgmasks)
 		if err != nil {
 			log.Println(err)
 			continue
